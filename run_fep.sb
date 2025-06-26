@@ -1,0 +1,28 @@
+#!/bin/bash
+
+#SBATCH --job-name=fep
+#SBATCH --time=120:00:00
+#SBATCH --nodes=1             # number of nodes
+#SBATCH --ntasks-per-node=1     # cpu tasks per node
+#SBATCH --cpus-per-task=1       # specify how many cpus per task
+#SBATCH --mem 35G  # memory per node
+#SBATCH -p gpuA5500                  # use the gpu queue (p = partition)
+#SBATCH --gres=gpu:1            # specify how many gpus per node
+##SBATCH --exclude=gollum[070-090]  #,026,028,042,049,050,058,079]  ##,153,154]
+
+#SBATCH --output=out/fep_%A_%a.o
+#SBATCH --error=out/fep_%A_%a.e
+#SBATCH --array=0-10
+#
+# Load Modules 
+
+source ~/.bash_profile
+module load charmm
+
+mkdir -p test/
+
+python3 run_fep.py --path $1 --rank ${SLURM_ARRAY_TASK_ID} --size ${SLURM_ARRAY_TASK_COUNT}
+
+scontrol show job $SLURM_JOB_ID
+
+exit

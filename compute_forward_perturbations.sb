@@ -1,0 +1,28 @@
+#!/bin/bash
+
+#SBATCH --job-name=pert
+#SBATCH --time=96:00:00
+#SBATCH --nodes=1             # number of nodes
+#SBATCH --ntasks-per-node=1     # cpu tasks per node
+#SBATCH --cpus-per-task=1       # specify how many cpus per task
+#SBATCH --mem 50G  # memory per node
+#SBATCH -p ada5000                  # use the gpu queue (p = partition)
+#SBATCH --gres=gpu:1            # specify how many gpus per node
+##SBATCH --exclude=gollum[001-020,026,028,042,049,050,058,079]  ##,153,154]
+
+#SBATCH --output=out/compute_forward_perturbations_%A_%a.o
+#SBATCH --error=out/compute_forward_perturbations_%A_%a.e
+#SBATCH --array=0-10
+
+# Load Modules 
+
+source ~/.bash_profile
+module load charmm
+
+mkdir -p test
+
+mpirun -np 1 python3 compute_forward_perturbations.py --path $1 --rank ${SLURM_ARRAY_TASK_ID} --size ${SLURM_ARRAY_TASK_COUNT} 
+
+scontrol show job $SLURM_JOB_ID
+
+exit
